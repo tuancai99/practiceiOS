@@ -9,27 +9,35 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var messagesManager = MessagesManager()
-    var messageArray = ["Hello", "Hi", "hru?"]
     var body: some View {
         VStack {
             VStack {
-                    TitleRow()
-                    ScrollView{
-                        ForEach(messagesManager.messages, id: \.id) {message in MessageBubble(message: message)
-                            
+                TitleRow()
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        ForEach(messagesManager.messages, id: \.id) { message in
+                            MessageBubble(message: message)
                         }
                     }
                     .padding(.top, 10)
                     .background(.white)
-                    .cornerRadius(30, corners: [.topLeft,.topRight])
-                    
+                    .cornerRadius(30, corners: [.topLeft, .topRight])
+                    .onChange(of: messagesManager.lastMessageId) { id in
+                        withAnimation {
+                            proxy.scrollTo(id, anchor: .bottom)
+                        }
+                    }
                 }
+            }
             .background(Color(red: 0.6, green: 0.4, blue: 0.8))
-            MessageField().environmentObject(messagesManager)
+            MessageField()
+                .environmentObject(messagesManager)
         }
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
